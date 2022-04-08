@@ -11,13 +11,20 @@
   <body>
     <div id="snake">
       <p id="score"></p>
-      <canvas id="mycanvas" width="500" height="500"></canvas>
+      <div id="divCanvas">
+        <canvas id="mycanvas" width="500" height="500"></canvas>
+      </div>
     </div>
   </body>
   <style>
     #snake {
       display: flex;
       flex-direction: column;
+      align-items: center;
+    }
+    #btnRestart {
+      padding: 0.5rem;
+      margin: 1rem;
     }
   </style>
 </html>

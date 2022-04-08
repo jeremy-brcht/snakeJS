@@ -1,5 +1,6 @@
 var canvas = document.getElementById("mycanvas");
 var scoreTag = document.getElementById("score");
+var divCanvas = document.getElementById("divCanvas");
 var ctx = [];
 var ctx = canvas.getContext("2d");
 
@@ -55,6 +56,7 @@ function load_level(n) {
 }
 
 function createGrid() {
+  grid = [];
   for (i = 0; i < level.dimension; i++) {
     grid.push([]);
     for (j = 0; j < level.dimension; j++) {
@@ -196,16 +198,20 @@ function move() {
     ) {
       lose = true;
       console.log("perdu");
-      /* let btn = document.createElement("button");
+      let btn = document.createElement("button");
       btn.textContent = "recommencer";
+      btn.id = "btnRestart"
       btn.onclick = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.width);
         score = 0;
+        lose = false;
+        lastDirection = "none";
         load_level(1);
         updateScore();
+        btn.remove();
       };
 
-      insertAfter(btn, canvas); */
+      insertAfter(btn, divCanvas);
     }
 
     if (isArrayInArray(level.snake[0], level.food)) {
