@@ -1,5 +1,7 @@
 var canvas = document.getElementById("mycanvas");
 var scoreTag = document.getElementById("score");
+var settingsTag = document.getElementById("settings");
+var divAffichage = document.getElementById("divAffichage");
 var divCanvas = document.getElementById("divCanvas");
 var ctx = [];
 var ctx = canvas.getContext("2d");
@@ -7,11 +9,13 @@ var ctx = canvas.getContext("2d");
 ctx.strokeStyle = "black";
 
 let grid = [];
-console.log(typeof grid);
 let direction = "none";
 let lastDirection = "none";
-let lose = false;
+let lose = true;
 let level = {};
+let selectedLevel = 1;
+
+let options = [1, 2, 3, 4];
 
 let score = 0;
 
@@ -19,8 +23,61 @@ function insertAfter(newNode, existingNode) {
   existingNode.parentNode.insertBefore(newNode, existingNode.nextSibling);
 }
 
-function updateScore() {
-  scoreTag.textContent = "Score : " + score;
+function updateAffichage() {
+  while (divAffichage.firstChild) {
+    divAffichage.removeChild(divAffichage.lastChild);
+  }
+
+  if (!lose) {
+    let scoreTag = document.createElement("p");
+    scoreTag.appendChild(document.createTextNode("Score : " + score));
+    divAffichage.appendChild(scoreTag);
+
+    if (!document.getElementById("btnLose")) {
+      let btn = document.createElement("button");
+      btn.textContent = "Stop";
+      btn.id = "btnLose";
+      btn.onclick = () => {
+        lose = true;
+        updateAffichage();
+      };
+      insertAfter(btn, divCanvas);
+    }
+  } else {
+    if (document.getElementById("btnLose"))
+      document.getElementById("btnLose").remove();
+    let info = document.createElement("p");
+    info.appendChild(document.createTextNode("Choix du niveau : "));
+    divAffichage.appendChild(info);
+
+    let selectList = document.createElement("select");
+    selectList.id = "settingSelect";
+    selectList.onchange = (e) => {
+      selectedLevel = e.target.value;
+      load_level();
+      selectList.blur();
+    };
+    divAffichage.appendChild(selectList);
+
+    for (let i = 0; i < options.length; i++) {
+      let option = document.createElement("option");
+      option.value = options[i];
+      option.text = options[i];
+      selectList.appendChild(option);
+    }
+
+    let btn = document.createElement("button");
+    btn.textContent = "Start";
+    btn.id = "btnStart";
+    btn.onclick = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.width);
+      score = 0;
+      lose = false;
+      lastDirection = "none";
+      load_level();
+    };
+    divAffichage.appendChild(btn);
+  }
 }
 
 function isArrayInArray(array1, array2) {
@@ -31,8 +88,8 @@ function isArrayInArray(array1, array2) {
   return false;
 }
 
-function load_level(n) {
-  var url = "level" + n + ".json";
+function load_level() {
+  var url = "level" + selectedLevel + ".json";
   var req = new XMLHttpRequest();
   req.open("GET", url);
   req.onerror = function () {
@@ -123,8 +180,6 @@ function displayGrid() {
       ctx.stroke();
     }
   }
-  //   console.log(typeof level.delay);
-  //   setTimeout(move, level.delay);
 }
 
 document.onkeydown = function (e) {
@@ -163,14 +218,12 @@ function updateGrid() {
       }
     }
   }
-
-  //   console.log(grid);
   displayGrid();
 }
 
 function move() {
-  var counter = level.delay;
-  if (direction !== "none") {
+  let counter = level.delay;
+  if (direction !== "none" && !lose) {
     switch (direction) {
       case "right":
         level.snake.unshift([level.snake[0][0], level.snake[0][1] + 1]);
@@ -189,52 +242,32 @@ function move() {
         lastDirection = "up";
         break;
     }
+    let snakeBody = level.snake.slice(0, level.snake.lenght);
+    snakeBody.shift();
     if (
       level.snake[0][0] < 0 ||
       level.snake[0][0] > level.dimension ||
       level.snake[0][1] < 0 ||
       level.snake[0][1] > level.dimension ||
-      isArrayInArray(level.snake[0], level.walls)
+      isArrayInArray(level.snake[0], level.walls) ||
+      isArrayInArray(level.snake[0], snakeBody)
     ) {
       lose = true;
-      console.log("perdu");
-      let btn = document.createElement("button");
-      btn.textContent = "recommencer";
-      btn.id = "btnRestart"
-      btn.onclick = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.width);
-        score = 0;
-        lose = false;
-        lastDirection = "none";
-        load_level(1);
-        updateScore();
-        btn.remove();
-      };
-
-      insertAfter(btn, divCanvas);
     }
 
     if (isArrayInArray(level.snake[0], level.food)) {
-      console.log("mange");
       for (k in level.food) {
         if (level.food[k].toString() === level.snake[0].toString()) {
           level.food.splice(k, 1);
         }
       }
       newFood();
-      console.log(level.food);
       score++;
-      updateScore();
     } else {
       level.snake.pop();
     }
     updateGrid();
-
-    console.log(typeof counter, counter);
-    /* var myFunction = function () {
-      console.log(counter);
-      move();
-    }; */
+    updateAffichage();
     if (!lose) setTimeout(move, counter);
   }
 }
@@ -245,21 +278,10 @@ function newFood() {
     yFood = Math.floor(Math.random() * level.dimension);
   } while (grid[xFood][yFood] !== "empty");
 
-  level.food.push([xFood, yFood]); /* 
-
-  grid[xFood][yFood] = "food";
-  food[0] = xFood;
-  food[1] = yFood; */
+  level.food.push([xFood, yFood]);
 }
 
-// load_level(1);
-
 window.addEventListener("load", function () {
-  load_level(1);
-  updateScore();
+  load_level();
+  updateAffichage();
 });
-
-// addToEmptyGrid();
-
-// displayGrid();
-// console.log(grid);
