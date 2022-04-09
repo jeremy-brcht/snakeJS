@@ -15,7 +15,7 @@ let lose = true;
 let level = {};
 let selectedLevel = 1;
 
-let options = [1, 2, 3, 4];
+let options = [1, 2, 3, 4, 5];
 
 let score = 0;
 
@@ -103,6 +103,7 @@ function load_level() {
       level.walls = data.walls;
       level.food = data.food;
       level.snake = data.snake;
+      level.evolution = data.evolution;
 
       createGrid();
     } else {
@@ -263,6 +264,7 @@ function move() {
       }
       newFood();
       score++;
+      level.delay = level.delay / level.evolution;
     } else {
       level.snake.pop();
     }
